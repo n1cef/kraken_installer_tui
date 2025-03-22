@@ -85,7 +85,7 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
 
 echo "copy file systems"
 echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 3
+sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
@@ -222,7 +222,7 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
 
 echo "copy file systems"
 echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 3
+sleep 4
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
@@ -383,7 +383,7 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
 
    echo "copy file systems"
 echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 3
+sleep 4
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
@@ -527,7 +527,7 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
 
 echo "copy file systems"
 echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 3
+sleep 4
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
@@ -634,6 +634,6 @@ fi
 
 
 
+echo -e "\033[34m installation done successfully .\033[0m"
 
-echo "installation finish .."
 exit 0
