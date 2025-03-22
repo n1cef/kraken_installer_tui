@@ -164,8 +164,17 @@ EOF
 echo "creating user ..."
 useradd -m -G wheel,input,audio,sddm,seat,tty,lpadmin "$username"
 echo "$username:$userpass" | chpasswd
+mount "${DISK}4" /home 
+mkdir /home/"$username"
+chown "$username":"$username" /home/"$username"
 
 cp /root/.xinitrc /home/"$username"/
+cp /root/.Xauthority /home/"$username"/
+sleep 2 
+umount -R "${DISK}4"
+
+
+
 
 echo "Configure Hostname"
 echo "$hostname" > /etc/hostname
@@ -184,6 +193,12 @@ echo " Configure location "
 echo "Configure keyboard "
 echo "KEYMAP=$keyboard" > /etc/vconsole.conf
 loadkeys "$keyboard"
+
+echo "delete live users ..."
+userdel -r pfe
+userdel -r cracken 
+userdel -r nacef
+
 
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
