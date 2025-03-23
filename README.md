@@ -28,14 +28,17 @@
 
     ## 🚀 Usage
    <h3>
+      ```sh
      sudo ./kraken_install.sh disk_name home_on swap_on username userpass system_language keyboard_layout hostname time_zone 
-   
+      ```
     
    </h3>
 
     ## 🚀 Example:
  <h3>  
+    ```sh
  sudo ./kraken_install.sh /dev/sda yes yes n1cef passoword en_US.UTF-8 us kraken /Africa/Tunis  
+    ```
  </h3>
 
 ## 📋 Parameters
