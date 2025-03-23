@@ -61,7 +61,7 @@
 >Disk WARNING: This script will format the specified disk. Double-check the disk_name! 
  
 
-## 📋 📂 Related Projects
+##  📂 Related Projects
    <h3>Kraken Installer GUI: Qt6-based frontend for this script. [Kraken Installer GUI](https://github.com/n1cef/kraken_installer_gui) </h3>
 
 
