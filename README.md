@@ -37,7 +37,7 @@
     ## 🚀 Example:
   
     ```sh
- sudo ./kraken_install.sh /dev/sda yes yes n1cef passoword en_US.UTF-8 us kraken /Africa/Tunis  
+        sudo ./kraken_install.sh /dev/sda yes yes n1cef passoword en_US.UTF-8 us kraken /Africa/Tunis  
     ```
  
 
