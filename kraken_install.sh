@@ -64,6 +64,7 @@ echo "Disk partitioning..."
 
 # case one ----------------------------------------------------
 if [ "$swap_on" == "yes" ] && [ "$home_on" == "yes" ]; then
+	echo "PROGRESS:0:Starting installation..."
     echo "Creating partitions with both swap and home..."
     echo "label: gpt
 size=500M, type=21686148-6449-6E6F-744E-656564454649, name=bios_boot
@@ -72,6 +73,7 @@ size=2G, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F, name=swap
 size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     
     sleep 3
+    echo "PROGRESS:25:Disk partitioned"
     echo "Formatting partitions..."
     mkfs.ext4 -F "${DISK}2"  
     mkswap "${DISK}3"
@@ -82,7 +84,7 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     echo "mounting root partition ..."
     mount "${DISK}2" /home/kraken
 
-
+echo "PROGRESS:50:Packages installed"
 echo "copy file systems"
 echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
 sleep 5
@@ -101,7 +103,7 @@ echo "mounting ..."
 mount --bind /dev /home/kraken/dev
 mount --bind /proc /home/kraken/proc
 mount --bind /sys /home/kraken/sys
-
+echo "PROGRESS:50:Packages installed"
 echo "chroot to the new system "
 chroot /home/kraken /bin/bash << CHROOT_EOF
 
@@ -204,6 +206,7 @@ echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 
 CHROOT_EOF
+echo "PROGRESS:100:Installation complete"
 
 umount -R /home/kraken
 
