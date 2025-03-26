@@ -86,12 +86,12 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
 
 echo "PROGRESS:50:Packages installed"
 echo "copy file systems"
-echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
+echo -e "\e[34mPlease wait. The process can take some time; if you are using an SSD, it may take about 15 minutes.\e[0m"
 sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
-echo "copy kernla image .."
+echo "copy kernel image .."
 rm -Rf /home/kraken/boot/*
 cp /boot/System.map-6.10.5  /home/kraken/boot/
 cp /boot/config-6.10.5  /home/kraken/boot/
@@ -109,7 +109,16 @@ chroot /home/kraken /bin/bash << CHROOT_EOF
 
 grub-install "$DISK"
 sleep 3 
+cp -r /usr/share/grub/themes /boot/grub/
+sleep 2
+mkdir -p  /boot/grub/fonts
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_90.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_54.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_20.pf2 /boot/grub/fonts/
 
+sleep 3 
 
 
 cat > /boot/grub/grub.cfg << EOF
@@ -121,14 +130,36 @@ set timeout=10
 insmod part_gpt
 insmod ext2
 set root=(hd0,2)
-
+insmod vbe
+set gfxmode=1024x768
+insmod gfxterm
+terminal_output gfxterm
+insmod font
 insmod efi_gop
 insmod efi_uga
+loadfont /boot/grub/fonts/dersu_uzala_brush_16.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_54.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_60.pf2
+loadfont /boot/grub/fonts/fira_code_16.pf2
+loadfont /boot/grub/fonts/fira_code_20.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_100.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_90.pf2
+
+insmod png
+set theme=/boot/grub/themes/kraken_grub_theme/theme.txt
+
 if loadfont /boot/grub/fonts/unicode.pf2; then
   terminal_output gfxterm
 fi
 
 menuentry "GNU/Linux, kraken os " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+menuentry "kraken os (Debug) " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+
+menuentry "kraken os (Ram)" {
   linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
 }
 
@@ -164,7 +195,7 @@ cgroup2        /sys/fs/cgroup cgroup2  nosuid,noexec,nodev 0     0
 EOF
 
 echo "creating user ..."
-useradd -m -G wheel,input,audio,sddm,seat,tty,lpadmin "$username"
+useradd -m -G wheel,input,audio,sddm,seat,tty,video,lpadmin "$username"
 echo "$username:$userpass" | chpasswd
 mount "${DISK}4" /home 
 mkdir /home/"$username"
