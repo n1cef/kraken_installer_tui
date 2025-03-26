@@ -235,7 +235,7 @@ userdel -r nacef
 
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
-
+rm -Rf /etc/rc.d/init.d/startkde
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 
@@ -370,7 +370,7 @@ loadkeys "$keyboard"
 
 echo "enable sddm services "
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
-
+rm -Rf /etc/rc.d/init.d/startkde
 
 CHROOT_EOF
 
