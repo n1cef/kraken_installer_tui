@@ -84,9 +84,9 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     echo "mounting root partition ..."
     mount "${DISK}2" /home/kraken
 
-echo "PROGRESS:50:Packages installed"
-echo "copy file systems"
-echo -e "\e[34mPlease wait. The process can take some time; if you are using an SSD, it may take about 15 minutes.\e[0m"
+echo "PROGRESS:50:Prepare Files system"
+
+#echo -e "\e[34mPlease wait. The process can take some time; if you are using an SSD, it may take about 15 minutes.\e[0m"
 sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
