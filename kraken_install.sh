@@ -207,6 +207,9 @@ cp /root/.Xauthority /home/"$username"/
 
 mkdir -pv "/home/$username/.config"
 mkdir -pv "/home/$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config"
+chown "$username":"$username" /home/"$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config/alacritty.toml"
 
 cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
 [shell]
@@ -247,7 +250,7 @@ unset script RED GREEN NORMAL
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
-
+chown "$username":"$username" /home/"$username/.bashrc"
 sleep 2 
 umount -R "${DISK}4"
 
@@ -439,6 +442,9 @@ cp /root/.Xauthority /home/"$username"/
 
 mkdir -pv "/home/$username/.config"
 mkdir -pv "/home/$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config"
+chown "$username":"$username" /home/"$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config/alacritty.toml"
 
 cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
 [shell]
@@ -479,7 +485,7 @@ unset script RED GREEN NORMAL
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
-
+chown "$username":"$username" /home/"$username/.bashrc"
 sleep 2 
 umount -R "${DISK}3"
 
@@ -675,6 +681,9 @@ cp /root/.Xauthority /home/"$username"/
 
 mkdir -pv "/home/$username/.config"
 mkdir -pv "/home/$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config"
+chown "$username":"$username" /home/"$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config/alacritty.toml"
 
 cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
 [shell]
@@ -715,7 +724,7 @@ unset script RED GREEN NORMAL
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
-
+chown "$username":"$username" /home/"$username/.bashrc"
 sleep 2 
 
 
@@ -900,6 +909,9 @@ cp /root/.Xauthority /home/"$username"/
 
 mkdir -pv "/home/$username/.config"
 mkdir -pv "/home/$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config"
+chown "$username":"$username" /home/"$username/.config/alacritty"
+chown "$username":"$username" /home/"$username/.config/alacritty.toml"
 
 cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
 [shell]
@@ -940,7 +952,7 @@ unset script RED GREEN NORMAL
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
-
+chown "$username":"$username" /home/"$username/.bashrc"
 sleep 2 
 
 
