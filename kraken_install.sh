@@ -33,7 +33,7 @@ validate_parameters() {
         usage
     fi
 
-    # Validate yes/no parameters
+   
     if [[ "$2" != "yes" && "$2" != "no" ]]; then
         echo -e "${RED}Error: home_on must be 'yes' or 'no'${NC}"
         usage
@@ -84,13 +84,13 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     echo "mounting root partition ..."
     mount "${DISK}2" /home/kraken
 
-echo "PROGRESS:50:Prepare Files system"
+echo "PROGRESS:40:Prepare Files system"
 
 #echo -e "\e[34mPlease wait. The process can take some time; if you are using an SSD, it may take about 15 minutes.\e[0m"
 sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
-
+echo "PROGRESS:70:Configure Bootloader"
 echo "copy kernel image .."
 rm -Rf /home/kraken/boot/*
 cp /boot/System.map-6.10.5  /home/kraken/boot/
@@ -203,6 +203,51 @@ chown "$username":"$username" /home/"$username"
 
 cp /root/.xinitrc /home/"$username"/
 cp /root/.Xauthority /home/"$username"/
+
+
+mkdir -pv "/home/$username/.config"
+mkdir -pv "/home/$username/.config/alacritty"
+
+cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
+[shell]
+program = "bash"
+args = ["-c", "fastfetch; exec bash"]
+EOF
+
+/usr/bin/alacritty migrate
+
+
+cp "/home/$username/.bashrc" "/home/$username/.bashrc.bak"
+
+cat > "/home/$username/.bashrc" << 'EOF'
+# Optimize build jobs
+export MAKEFLAGS="-j$(nproc)"
+
+# Custom prompt
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]]; then
+    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+else
+    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+fi
+
+# Source system-wide scripts
+for script in /etc/profile.d/*.sh ; do
+    if [ -r "$script" ]; then
+        . "$script"
+    fi
+done
+
+# Cleanup variables
+unset script RED GREEN NORMAL
+
+# Environment variables
+export WLR_NO_HARDWARE_CURSORS="1"  
+export GDK_BACKEND="wayland"        
+EOF
+
 sleep 2 
 umount -R "${DISK}4"
 
@@ -238,6 +283,7 @@ sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${
 rm -Rf /etc/rc.d/init.d/startkde
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
+sleep 3
 
 umount -R /home/kraken
 
@@ -248,9 +294,11 @@ fi
 
 
 
+
 #case 2 --------------------------------------
 
 if [ "$home_on" == "yes" ] && [ "$swap_on" == "no" ]; then
+   echo "PROGRESS:0:Starting installation..."
     echo "Creating partitions with home (no swap)..."
     echo "label: gpt
 size=500M, type=21686148-6449-6E6F-744E-656564454649, name=bios_boot
@@ -258,6 +306,7 @@ size=25G, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root
 size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     
     sleep 3
+     echo "PROGRESS:25:Disk partitioned"
     echo "Formatting partitions..."
     mkfs.ext4 -F "${DISK}2"
     mkfs.ext4 -F  "${DISK}3"
@@ -268,13 +317,12 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
 
 
    
+echo "PROGRESS:40:Prepare Files system"
 
-echo "copy file systems"
-echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 4
+sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
-
+echo "PROGRESS:70:Configure Bootloader"
 echo "copy kernla image .."
 rm -Rf /home/kraken/boot/* 
 cp /boot/System.map-6.10.5  /home/kraken/boot/
@@ -287,12 +335,23 @@ echo "mounting ..."
 mount --bind /dev /home/kraken/dev
 mount --bind /proc /home/kraken/proc
 mount --bind /sys /home/kraken/sys
-
+echo "PROGRESS:50:Packages installed"
 echo "chroot to the new system "
 chroot /home/kraken  /bin/bash << CHROOT_EOF
 
 grub-install "$DISK"
 sleep 3
+cp -r /usr/share/grub/themes /boot/grub/
+sleep 2
+mkdir -p  /boot/grub/fonts
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_90.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_54.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_20.pf2 /boot/grub/fonts/
+
+sleep 3 
+
 cat > /boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
 # el dinary mara men houna
@@ -302,14 +361,36 @@ set timeout=10
 insmod part_gpt
 insmod ext2
 set root=(hd0,2)
-
+insmod vbe
+set gfxmode=1024x768
+insmod gfxterm
+terminal_output gfxterm
+insmod font
 insmod efi_gop
 insmod efi_uga
+loadfont /boot/grub/fonts/dersu_uzala_brush_16.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_54.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_60.pf2
+loadfont /boot/grub/fonts/fira_code_16.pf2
+loadfont /boot/grub/fonts/fira_code_20.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_100.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_90.pf2
+
+insmod png
+set theme=/boot/grub/themes/kraken_grub_theme/theme.txt
+
 if loadfont /boot/grub/fonts/unicode.pf2; then
   terminal_output gfxterm
 fi
 
 menuentry "GNU/Linux, kraken os " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+menuentry "kraken os (Debug) " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+
+menuentry "kraken os (Ram)" {
   linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
 }
 
@@ -344,11 +425,66 @@ cgroup2        /sys/fs/cgroup cgroup2  nosuid,noexec,nodev 0     0
 
 EOF
 
+
 echo "creating user ..."
-useradd -m -G wheel,input,audio,sddm,seat,tty,lpadmin "$username"
+useradd -m -G wheel,input,audio,sddm,seat,tty,video,lpadmin "$username"
 echo "$username:$userpass" | chpasswd
+mount "${DISK}3" /home 
+mkdir /home/"$username"
+chown "$username":"$username" /home/"$username"
 
 cp /root/.xinitrc /home/"$username"/
+cp /root/.Xauthority /home/"$username"/
+
+
+mkdir -pv "/home/$username/.config"
+mkdir -pv "/home/$username/.config/alacritty"
+
+cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
+[shell]
+program = "bash"
+args = ["-c", "fastfetch; exec bash"]
+EOF
+
+/usr/bin/alacritty migrate
+
+
+cp "/home/$username/.bashrc" "/home/$username/.bashrc.bak"
+
+cat > "/home/$username/.bashrc" << 'EOF'
+# Optimize build jobs
+export MAKEFLAGS="-j$(nproc)"
+
+# Custom prompt
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]]; then
+    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+else
+    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+fi
+
+# Source system-wide scripts
+for script in /etc/profile.d/*.sh ; do
+    if [ -r "$script" ]; then
+        . "$script"
+    fi
+done
+
+# Cleanup variables
+unset script RED GREEN NORMAL
+
+# Environment variables
+export WLR_NO_HARDWARE_CURSORS="1"  
+export GDK_BACKEND="wayland"        
+EOF
+
+sleep 2 
+umount -R "${DISK}3"
+
+
+
 
 echo "Configure Hostname"
 echo "$hostname" > /etc/hostname
@@ -368,13 +504,22 @@ echo "Configure keyboard "
 echo "KEYMAP=$keyboard" > /etc/vconsole.conf
 loadkeys "$keyboard"
 
-echo "enable sddm services "
+echo "delete live users ..."
+userdel -r pfe
+userdel -r cracken 
+userdel -r nacef
+
+
+echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
-
 CHROOT_EOF
+echo "PROGRESS:100:Installation complete"
+sleep 3
 
 umount -R /home/kraken
+
+
 
 
 
@@ -390,30 +535,9 @@ fi
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #case 3 -------------------------------------
 if [ "$home_on" == "no" ] && [ "$swap_on" == "yes" ]; then
+echo "PROGRESS:0:Starting installation..."
     echo "Creating partitions with swap (no home)..."
     echo "label: gpt
 size=500M, type=21686148-6449-6E6F-744E-656564454649, name=bios_boot
@@ -421,6 +545,7 @@ size=2G, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F, name=swap
 size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
     
     sleep 3
+    echo "PROGRESS:25:Disk partitioned"
     echo "Formatting partitions..."
     mkswap "${DISK}2"
     mkfs.ext4 -F  "${DISK}3"
@@ -429,10 +554,8 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
     
     echo "mounting root partition ..."
     mount "${DISK}3" /home/kraken
-
-   echo "copy file systems"
-echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 4
+echo "PROGRESS:40:Prepare Files system"
+ sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
 
@@ -448,12 +571,24 @@ echo "mounting ..."
 mount --bind /dev /home/kraken/dev
 mount --bind /proc /home/kraken/proc
 mount --bind /sys /home/kraken/sys
-
+echo "PROGRESS:50:Packages installed"
 echo "chroot to the new system "
 chroot /home/kraken  /bin/bash << CHROOT_EOF
 
 grub-install "$DISK"
  sleep 3 
+
+ cp -r /usr/share/grub/themes /boot/grub/
+sleep 2
+mkdir -p  /boot/grub/fonts
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_90.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_54.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_20.pf2 /boot/grub/fonts/
+
+sleep 3 
+
 cat > /boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
 # el dinary mara men houna
@@ -462,15 +597,37 @@ set timeout=10
 
 insmod part_gpt
 insmod ext2
-set root=(hd0,3)
-
+set root=(hd0,2)
+insmod vbe
+set gfxmode=1024x768
+insmod gfxterm
+terminal_output gfxterm
+insmod font
 insmod efi_gop
 insmod efi_uga
+loadfont /boot/grub/fonts/dersu_uzala_brush_16.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_54.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_60.pf2
+loadfont /boot/grub/fonts/fira_code_16.pf2
+loadfont /boot/grub/fonts/fira_code_20.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_100.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_90.pf2
+
+insmod png
+set theme=/boot/grub/themes/kraken_grub_theme/theme.txt
+
 if loadfont /boot/grub/fonts/unicode.pf2; then
   terminal_output gfxterm
 fi
 
 menuentry "GNU/Linux, kraken os " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}3 ro
+}
+menuentry "kraken os (Debug) " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}3 ro
+}
+
+menuentry "kraken os (Ram)" {
   linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}3 ro
 }
 
@@ -506,10 +663,64 @@ cgroup2        /sys/fs/cgroup cgroup2  nosuid,noexec,nodev 0     0
 EOF
 
 echo "creating user ..."
-useradd -m -G wheel,input,audio,sddm,seat,tty,lpadmin "$username"
+useradd -m -G wheel,input,audio,sddm,seat,tty,video,lpadmin "$username"
 echo "$username:$userpass" | chpasswd
 
+mkdir /home/"$username"
+chown "$username":"$username" /home/"$username"
+
 cp /root/.xinitrc /home/"$username"/
+cp /root/.Xauthority /home/"$username"/
+
+
+mkdir -pv "/home/$username/.config"
+mkdir -pv "/home/$username/.config/alacritty"
+
+cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
+[shell]
+program = "bash"
+args = ["-c", "fastfetch; exec bash"]
+EOF
+
+/usr/bin/alacritty migrate
+
+
+cp "/home/$username/.bashrc" "/home/$username/.bashrc.bak"
+
+cat > "/home/$username/.bashrc" << 'EOF'
+# Optimize build jobs
+export MAKEFLAGS="-j$(nproc)"
+
+# Custom prompt
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]]; then
+    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+else
+    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+fi
+
+# Source system-wide scripts
+for script in /etc/profile.d/*.sh ; do
+    if [ -r "$script" ]; then
+        . "$script"
+    fi
+done
+
+# Cleanup variables
+unset script RED GREEN NORMAL
+
+# Environment variables
+export WLR_NO_HARDWARE_CURSORS="1"  
+export GDK_BACKEND="wayland"        
+EOF
+
+sleep 2 
+
+
+
+
 
 echo "Configure Hostname"
 echo "$hostname" > /etc/hostname
@@ -529,10 +740,18 @@ echo "Configure keyboard "
 echo "KEYMAP=$keyboard" > /etc/vconsole.conf
 loadkeys "$keyboard"
 
-echo "enable sddm deamon "
-sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
+echo "delete live users ..."
+userdel -r pfe
+userdel -r cracken 
+userdel -r nacef
 
+
+echo "enable sddm services ..."
+sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
+rm -Rf /etc/rc.d/init.d/startkde
 CHROOT_EOF
+echo "PROGRESS:100:Installation complete"
+sleep 3
 
 umount -R /home/kraken
 
@@ -541,21 +760,18 @@ fi
 
 
 
-
-
-
-
-
 #case 4 -------------------------
 if [ "$home_on" == "no" ] && [ "$swap_on" == "no" ]; then
+echo "PROGRESS:0:Starting installation..."
     echo "Creating partitions without swap or home..."
     echo "label: gpt
 size=500M, type=21686148-6449-6E6F-744E-656564454649, name=bios_boot
 size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
     
     sleep 3
+    echo "PROGRESS:25:Disk partitioned"
     echo "Formatting partitions..."
-    mkfs.ext4 -F  "${DISK}2"  # Fixed typo: mfks -> mkfs
+    mkfs.ext4 -F  "${DISK}2"  
     echo "Partitioning and formatting completed."
 
 
@@ -564,22 +780,11 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root" | sfdisk "$DISK"
     mount "${DISK}2" /home/kraken
 
 
-
-
-
-
-
-
-
-
-
-
-echo "copy file systems"
-echo -e "\033[34mPlease wait. The process can take some time; if you are using an SDD, it may take about 15 minutes.\033[0m"
-sleep 4
+echo "PROGRESS:40:Prepare Files system"
+sleep 5
 rsync -av --exclude={"/dev/*","/proc/*","/mnt/*","/home/*","/media/*","/run/*","/sys/*","/boot/*"} / /home/kraken
 
-
+echo "PROGRESS:70:Configure Bootloader"
 echo "copy kernla image .."
 rm -Rf /home/kraken/boot/* 
 cp /boot/System.map-6.10.5  /home/kraken/boot/
@@ -592,12 +797,23 @@ echo "mounting ..."
 mount --bind /dev /home/kraken/dev
 mount --bind /proc /home/kraken/proc
 mount --bind /sys /home/kraken/sys
-
+echo "PROGRESS:50:Packages installed"
 echo "chroot to the new system "
 chroot /home/kraken  /bin/bash << CHROOT_EOF
 
 grub-install "$DISK"
-sleep 2 
+sleep 3 
+
+cp -r /usr/share/grub/themes /boot/grub/
+sleep 2
+mkdir -p  /boot/grub/fonts
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_90.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_16.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/dersu_uzala_brush_54.pf2 /boot/grub/fonts/
+cp /boot/grub/themes/kraken_grub_theme/fira_code_20.pf2 /boot/grub/fonts/
+
+sleep 3
 
 cat > /boot/grub/grub.cfg << EOF
 # Begin /boot/grub/grub.cfg
@@ -608,14 +824,36 @@ set timeout=10
 insmod part_gpt
 insmod ext2
 set root=(hd0,2)
-
+insmod vbe
+set gfxmode=1024x768
+insmod gfxterm
+terminal_output gfxterm
+insmod font
 insmod efi_gop
 insmod efi_uga
+loadfont /boot/grub/fonts/dersu_uzala_brush_16.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_54.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_60.pf2
+loadfont /boot/grub/fonts/fira_code_16.pf2
+loadfont /boot/grub/fonts/fira_code_20.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_100.pf2
+loadfont /boot/grub/fonts/dersu_uzala_brush_90.pf2
+
+insmod png
+set theme=/boot/grub/themes/kraken_grub_theme/theme.txt
+
 if loadfont /boot/grub/fonts/unicode.pf2; then
   terminal_output gfxterm
 fi
 
 menuentry "GNU/Linux, kraken os " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+menuentry "kraken os (Debug) " {
+  linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
+}
+
+menuentry "kraken os (Ram)" {
   linux  /boot/vmlinuz-6.10.5-kraken-1.0 root=${DISK}2 ro
 }
 
@@ -649,12 +887,65 @@ cgroup2        /sys/fs/cgroup cgroup2  nosuid,noexec,nodev 0     0
 #efivarfs /sys/firmware/efi/efivars efivarfs defaults 0 0
 
 EOF
-
 echo "creating user ..."
-useradd -m -G wheel,input,audio,sddm,seat,tty,lpadmin "$username"
+useradd -m -G wheel,input,audio,sddm,seat,tty,video,lpadmin "$username"
 echo "$username:$userpass" | chpasswd
 
+mkdir /home/"$username"
+chown "$username":"$username" /home/"$username"
+
 cp /root/.xinitrc /home/"$username"/
+cp /root/.Xauthority /home/"$username"/
+
+
+mkdir -pv "/home/$username/.config"
+mkdir -pv "/home/$username/.config/alacritty"
+
+cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
+[shell]
+program = "bash"
+args = ["-c", "fastfetch; exec bash"]
+EOF
+
+/usr/bin/alacritty migrate
+
+
+cp "/home/$username/.bashrc" "/home/$username/.bashrc.bak"
+
+cat > "/home/$username/.bashrc" << 'EOF'
+# Optimize build jobs
+export MAKEFLAGS="-j$(nproc)"
+
+# Custom prompt
+NORMAL="\[\e[0m\]"
+RED="\[\e[1;31m\]"
+GREEN="\[\e[1;32m\]"
+if [[ $EUID == 0 ]]; then
+    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+else
+    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+fi
+
+# Source system-wide scripts
+for script in /etc/profile.d/*.sh ; do
+    if [ -r "$script" ]; then
+        . "$script"
+    fi
+done
+
+# Cleanup variables
+unset script RED GREEN NORMAL
+
+# Environment variables
+export WLR_NO_HARDWARE_CURSORS="1"  
+export GDK_BACKEND="wayland"        
+EOF
+
+sleep 2 
+
+
+
+
 
 echo "Configure Hostname"
 echo "$hostname" > /etc/hostname
@@ -674,13 +965,23 @@ echo "Configure keyboard "
 echo "KEYMAP=$keyboard" > /etc/vconsole.conf
 loadkeys "$keyboard"
 
-echo "enable sddm services"
-sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
+echo "delete live users ..."
+userdel -r pfe
+userdel -r cracken 
+userdel -r nacef
 
+
+echo "enable sddm services ..."
+sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
+rm -Rf /etc/rc.d/init.d/startkde
 CHROOT_EOF
+echo "PROGRESS:100:Installation complete"
+sleep 3
+
+umount -R /home/kraken
+
 
 fi
-
 
 
 echo -e "\033[34m installation done successfully .\033[0m"
