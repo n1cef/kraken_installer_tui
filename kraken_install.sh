@@ -230,26 +230,22 @@ cat > "/home/$username/.bashrc" << 'EOF'
 # Optimize build jobs
 export MAKEFLAGS="-j$(nproc)"
 
-# Custom prompt
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
+# Custom prompt (color codes embedded directly in PS1)
 if [[ $EUID == 0 ]]; then
-    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+    PS1="\[\e[1;31m\]\u [ \[\e[0m\]\w\[\e[1;31m\] ]# \[\e[0m\]"
 else
-    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+    PS1="\[\e[1;32m\]\u [ \[\e[0m\]\w\[\e[1;32m\] ]\$ \[\e[0m\]"
 fi
 
 
+unset script
 
 
-# Cleanup variables
-unset script RED GREEN NORMAL
-
-# Environment variables
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
+
+
 chown "$username":"$username" /home/"$username/.bashrc"
 sleep 2 
 umount -R "${DISK}4"
@@ -286,6 +282,10 @@ sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${
 rm -Rf /etc/rc.d/init.d/startkde
 
 CHROOT_EOF
+
+chroot /home/kraken /bin/bash -c "alacritty migrate "
+
+
 
 echo "PROGRESS:72:This will take some time based on your selected packages.\nNote that we build packages from source.\nThis might take years... as  he takes my entire life! :')"
 echo "PROGRESS:75:Selected packages"
@@ -379,9 +379,9 @@ if [ -n "$packages" ]; then
         ;;
         
     php)
-        chroot /home/kraken /bin/bash -c "kraken download apr  && kraken prepare apr && kraken build apr && kraken test apr &&  kraken install apr  "
+        chroot /home/kraken /bin/bash -c "kraken download apr  && kraken prepare apr && kraken build apr  &&  kraken install apr  "
          sleep 1
-        chroot /home/kraken /bin/bash -c "kraken download apr-util && kraken prepare apr-util && kraken build apr-util && kraken test apr-util &&  kraken install apr-util  "
+        chroot /home/kraken /bin/bash -c "kraken download apr-util && kraken prepare apr-util && kraken build apr-util &&  kraken install apr-util  "
         sleep 1 
 
         chroot /home/kraken /bin/bash -c "kraken download pcre2  && kraken prepare pcre2 && kraken build pcre2  &&  kraken install pcre2  "
@@ -397,7 +397,7 @@ if [ -n "$packages" ]; then
          sleep 1 
 
 
-         chroot /home/kraken /bin/bash -c "kraken download php  && kraken prepare php && kraken build php && kraken test php &&  kraken install php && kraken postinstall php "
+         chroot /home/kraken /bin/bash -c "kraken download php  && kraken prepare php && kraken build php &&  kraken install php && kraken postinstall php "
         ;;
         
     go)
@@ -440,6 +440,7 @@ esac
                                    
          
         sleep 0.5
+        fi
     done
 fi
 
@@ -621,27 +622,17 @@ cat > "/home/$username/.bashrc" << 'EOF'
 # Optimize build jobs
 export MAKEFLAGS="-j$(nproc)"
 
-# Custom prompt
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
+# Custom prompt (color codes embedded directly in PS1)
 if [[ $EUID == 0 ]]; then
-    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+    PS1="\[\e[1;31m\]\u [ \[\e[0m\]\w\[\e[1;31m\] ]# \[\e[0m\]"
 else
-    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+    PS1="\[\e[1;32m\]\u [ \[\e[0m\]\w\[\e[1;32m\] ]\$ \[\e[0m\]"
 fi
 
-# Source system-wide scripts
-for script in /etc/profile.d/*.sh ; do
-    if [ -r "$script" ]; then
-        . "$script"
-    fi
-done
 
-# Cleanup variables
-unset script RED GREEN NORMAL
+unset script
 
-# Environment variables
+
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
@@ -1018,27 +1009,17 @@ cat > "/home/$username/.bashrc" << 'EOF'
 # Optimize build jobs
 export MAKEFLAGS="-j$(nproc)"
 
-# Custom prompt
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
+# Custom prompt (color codes embedded directly in PS1)
 if [[ $EUID == 0 ]]; then
-    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+    PS1="\[\e[1;31m\]\u [ \[\e[0m\]\w\[\e[1;31m\] ]# \[\e[0m\]"
 else
-    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+    PS1="\[\e[1;32m\]\u [ \[\e[0m\]\w\[\e[1;32m\] ]\$ \[\e[0m\]"
 fi
 
-# Source system-wide scripts
-for script in /etc/profile.d/*.sh ; do
-    if [ -r "$script" ]; then
-        . "$script"
-    fi
-done
 
-# Cleanup variables
-unset script RED GREEN NORMAL
+unset script
 
-# Environment variables
+
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
@@ -1402,27 +1383,17 @@ cat > "/home/$username/.bashrc" << 'EOF'
 # Optimize build jobs
 export MAKEFLAGS="-j$(nproc)"
 
-# Custom prompt
-NORMAL="\[\e[0m\]"
-RED="\[\e[1;31m\]"
-GREEN="\[\e[1;32m\]"
+# Custom prompt (color codes embedded directly in PS1)
 if [[ $EUID == 0 ]]; then
-    PS1="${RED}\u [ ${NORMAL}\w${RED} ]# ${NORMAL}"
+    PS1="\[\e[1;31m\]\u [ \[\e[0m\]\w\[\e[1;31m\] ]# \[\e[0m\]"
 else
-    PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
+    PS1="\[\e[1;32m\]\u [ \[\e[0m\]\w\[\e[1;32m\] ]\$ \[\e[0m\]"
 fi
 
-# Source system-wide scripts
-for script in /etc/profile.d/*.sh ; do
-    if [ -r "$script" ]; then
-        . "$script"
-    fi
-done
 
-# Cleanup variables
-unset script RED GREEN NORMAL
+unset script
 
-# Environment variables
+
 export WLR_NO_HARDWARE_CURSORS="1"  
 export GDK_BACKEND="wayland"        
 EOF
