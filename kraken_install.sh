@@ -57,7 +57,7 @@ language=$6 #valid en_US.UTF-8 ,fr_FR.UTF-8,ar_SA.UTF-8
 keyboard=$7 # valid keyboard us, fr 
 hostname=$8
 timezone=$9 #valid /Africa/Tunis 
-packages=${10}
+packages=${10} # array of packages needed by the user to  take nobel prize 
 
 echo "Welcome to Kraken OS"
 mkdir -p /home/kraken  
@@ -285,8 +285,10 @@ echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
 
+CHROOT_EOF
 
-    echo "PROGRESS:30:Selected packages"
+echo "PROGRESS:72:This will take some time based on your selected packages.\nNote that we build packages from source.\nThis might take years... as  he takes my entire life! :')"
+echo "PROGRESS:75:Selected packages"
 echo -e "\nSelected Packages:"
 if [ -n "$packages" ]; then
     IFS=',' read -ra PKG_ARRAY <<< "$packages"
@@ -298,7 +300,7 @@ else
 fi  
 
 
-echo "PROGRESS:50:Packages installed"
+echo "PROGRESS:80:Installing Packages ..."
 if [ -n "$packages" ]; then
 
     declare -A base_packages=(
@@ -345,84 +347,89 @@ if [ -n "$packages" ]; then
         else 
 
         case "$pkg" in
-    vscode | emacs)
-        /usr/bin/kraken entropy emacs
+    vscode)
+        chroot /home/kraken /bin/bash -c "kraken download vscode && kraken prepare vscode "
         ;;
         
     ideaic)
-        /usr/bin/kraken entropy ideaic
+         
+        chroot /home/kraken /bin/bash -c "kraken download ideaic && kraken prepare ideaic "
         ;;
         
     cli)
-        /usr/bin/kraken entropy cli
+     chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
+     sleep 1
+         chroot /home/kraken /bin/bash -c "kraken download cli && kraken prepare cli && kraken build cli  && kraken install cli " 
         ;;
         
     gitlabcli)
-        /usr/bin/kraken entropy gitlabcli
+
+    chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
+    sleep 1 
+        chroot /home/kraken /bin/bash -c "kraken download gitlabcli && kraken prepare gitlabcli && kraken build gitlabcli && kraken install gitlabcli  && kraken postinstall gitlabcli " 
         ;;
         
     valgrind)
-        /usr/bin/kraken entropy valgrind
+        chroot /home/kraken /bin/bash -c "kraken download valgrind && kraken prepare valgrind &&  kraken build valgrind && kraken install valgrind " 
         ;;
         
     java)
-        /usr/bin/kraken entropy java
-        /usr/bin/kraken entropy giflib
-        /usr/bin/kraken entropy libXt
-        /usr/bin/kraken download jdk
-        /usr/bin/kraken prepare jdk
-        /usr/bin/kraken build jdk
-        /usr/bin/kraken fakeinstall jdk
-        /usr/bin/kraken install jdk
-        /usr/bin/kraken postinstall jdk
+        chroot /home/kraken /bin/bash -c "kraken download java && kraken prepare java &&  kraken install java && kraken postinstall java " 
+        
         ;;
         
     php)
-        /usr/bin/kraken entropy apache
-        /usr/bin/kraken entropy libxml2
-        /usr/bin/kraken download php
-        /usr/bin/kraken prepare php
-        /usr/bin/kraken build php
-        /usr/bin/kraken fakeinstall php
-        /usr/bin/kraken install php
-        /usr/bin/kraken postinstall php
+        chroot /home/kraken /bin/bash -c "kraken download apr  && kraken prepare apr && kraken build apr && kraken test apr &&  kraken install apr  "
+         sleep 1
+        chroot /home/kraken /bin/bash -c "kraken download apr-util && kraken prepare apr-util && kraken build apr-util && kraken test apr-util &&  kraken install apr-util  "
+        sleep 1 
+
+        chroot /home/kraken /bin/bash -c "kraken download pcre2  && kraken prepare pcre2 && kraken build pcre2  &&  kraken install pcre2  "
+      sleep 1 
+
+        chroot /home/kraken /bin/bash -c "kraken download apache  && kraken prepare apache && kraken build apache  &&  kraken install apache  "
+      sleep 1 
+
+      chroot /home/kraken /bin/bash -c "kraken download icu  && kraken prepare icu && kraken build icu  &&  kraken install icu  "
+      sleep 1 
+
+      chroot /home/kraken /bin/bash -c "kraken download libxml2  && kraken prepare libxml2 && kraken build libxml2  &&  kraken install libxml2 && kraken postinstall libxml2  "
+         sleep 1 
+
+
+         chroot /home/kraken /bin/bash -c "kraken download php  && kraken prepare php && kraken build php && kraken test php &&  kraken install php && kraken postinstall php "
         ;;
         
     go)
-        /usr/bin/kraken entropy go
+        chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go "
         ;;
         
     maven)
-        /usr/bin/kraken entropy apache-maven
+        chroot /home/kraken /bin/bash -c "kraken download apache-maven && kraken prepare apache-maven && kraken build apache-maven &&  kraken install apache-maven "
         ;;
         
     podman)
-        /usr/bin/kraken entropy podman-remote
+         chroot /home/kraken /bin/bash -c "kraken download podman-remote && kraken prepare podman-remote"
         ;;
         
     kubectl)
-        /usr/bin/kraken entropy kubectl
+        chroot /home/kraken /bin/bash -c "kraken download kubectl && kraken prepare kubectl"
         ;;
         
     terraform)
-        /usr/bin/kraken entropy terraform
+        chroot /home/kraken /bin/bash -c "kraken download terraform && kraken prepare terraform "
         ;;
         
     ansible)
-        /usr/bin/kraken download ansible
-        /usr/bin/kraken prepare ansible
-        /usr/bin/kraken build ansible
-        /usr/bin/kraken fakeinstall ansible
-        /usr/bin/kraken install ansible
-        /usr/bin/kraken postinstall ansible
+        chroot /home/kraken /bin/bash -c "kraken download ansible  && kraken prepare ansible &&  kraken install ansible  "
         ;;
         
     awscli)
-        /usr/bin/kraken entropy awscli
+        chroot /home/kraken /bin/bash -c "kraken download awscli && kraken prepare awscli "
         ;;
         
     kotlin)
-        /usr/bin/kraken entropy kotlin
+        chroot /home/kraken /bin/bash -c "kraken download kotlin && kraken prepare kotlin "
         ;;
         
     *)
@@ -438,8 +445,6 @@ fi
 
 
 
-
-CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 sleep 3
 
