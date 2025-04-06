@@ -22,7 +22,7 @@ validate_parameters() {
     fi
 
     # Check number of parameters
-    if [ $# -ne 9 ]; then
+    if [ $# -ne 10 ]; then
         echo -e "${RED}Error: Missing parameters${NC}"
         usage
     fi
@@ -57,6 +57,8 @@ language=$6 #valid en_US.UTF-8 ,fr_FR.UTF-8,ar_SA.UTF-8
 keyboard=$7 # valid keyboard us, fr 
 hostname=$8
 timezone=$9 #valid /Africa/Tunis 
+packages=${10}
+
 echo "Welcome to Kraken OS"
 mkdir -p /home/kraken  
 
@@ -83,6 +85,8 @@ size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
 
     echo "mounting root partition ..."
     mount "${DISK}2" /home/kraken
+
+  
 
 echo "PROGRESS:40:Prepare Files system"
 
@@ -236,12 +240,8 @@ else
     PS1="${GREEN}\u [ ${NORMAL}\w${GREEN} ]\$ ${NORMAL}"
 fi
 
-# Source system-wide scripts
-for script in /etc/profile.d/*.sh ; do
-    if [ -r "$script" ]; then
-        . "$script"
-    fi
-done
+
+
 
 # Cleanup variables
 unset script RED GREEN NORMAL
@@ -284,6 +284,161 @@ userdel -r nacef
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
+
+
+    echo "PROGRESS:30:Selected packages"
+echo -e "\nSelected Packages:"
+if [ -n "$packages" ]; then
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+        echo " - $pkg"
+    done
+else
+    echo "No packages selected"
+fi  
+
+
+echo "PROGRESS:50:Packages installed"
+if [ -n "$packages" ]; then
+
+    declare -A base_packages=(
+        [gcc]=1 [clang]=1 [rustc]=1 [llvm]=1 [gc]=1 
+        [vim]=1 [cmake]=1 [ninja]=1 [meson]=1 [git]=1 
+        [gdb]=1 [strace]=1 [python3]=1 [npm]=1 [pip]=1 
+        [cargo]=1 [sqlite3]=1 [curl]=1 [wget]=1
+    )
+
+    declare -A non_ready_packages=(
+   
+    [composer]=1 [gin]=1  [restapi]=1  [jest]=1 
+    [cypress]=1  [mariadb]=1 [docker]=1 [azurcli]=1  [googlecloudsdk]=1 
+    [grafana]=1  [nagios]=1 [prometheus]=1 
+    [react-nativeb]=1 [wireshark]=1
+    [nmap]=1  [openvpn]=1 [netcat]=1 
+    [wireguard]=1  [metasploit]=1 [burpsuite]=1 
+    [jhontheripper]=1 [aircrack]=1  [hashcat]=1  [scikitlearn]=1 
+    [tensorflow]=1 [pytorch]=1  [panda]=1  [numpy]=1 
+    [matplotlib]=1 [seaborn]=1  [plotly]=1  [spark]=1 
+    [hadoop]=1 [rstudio]=1  [caret]=1  [root-framework]=1 
+    [geant4]=1 [openfoam]=1  [lammps]=1  [quanrumespresso]=1 
+    [gromacs]=1 [paraview]=1  [blender]=1  [simulation]=1 
+    [stellarium]=1 [astropy]=1  [saoimageds9]=1  [celestia]=1 
+    [sagemath]=1 [maxima]=1  [sympy]=1  [octave]=1 
+    [R]=1 [jupyter-notebook]=1  [pspp]=1  [gretl]=1 
+    [gnuplot]=1 [texmaker]=1  [lyx]=1  [texstudio]=1 
+    [zotero]=1 
+
+
+    )
+
+    echo "Processing packages:"
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+
+       if [[ -n "${base_packages[$pkg]}" ]]; then
+            echo " - $pkg: installed in base system"
+            sleep 1
+        elif [[ -n "${non_ready_packages[$pkg]}" ]]; then
+            echo " - $pkg: available in next release"
+            sleep 0.2
+
+        else 
+
+        case "$pkg" in
+    vscode | emacs)
+        /usr/bin/kraken entropy emacs
+        ;;
+        
+    ideaic)
+        /usr/bin/kraken entropy ideaic
+        ;;
+        
+    cli)
+        /usr/bin/kraken entropy cli
+        ;;
+        
+    gitlabcli)
+        /usr/bin/kraken entropy gitlabcli
+        ;;
+        
+    valgrind)
+        /usr/bin/kraken entropy valgrind
+        ;;
+        
+    java)
+        /usr/bin/kraken entropy java
+        /usr/bin/kraken entropy giflib
+        /usr/bin/kraken entropy libXt
+        /usr/bin/kraken download jdk
+        /usr/bin/kraken prepare jdk
+        /usr/bin/kraken build jdk
+        /usr/bin/kraken fakeinstall jdk
+        /usr/bin/kraken install jdk
+        /usr/bin/kraken postinstall jdk
+        ;;
+        
+    php)
+        /usr/bin/kraken entropy apache
+        /usr/bin/kraken entropy libxml2
+        /usr/bin/kraken download php
+        /usr/bin/kraken prepare php
+        /usr/bin/kraken build php
+        /usr/bin/kraken fakeinstall php
+        /usr/bin/kraken install php
+        /usr/bin/kraken postinstall php
+        ;;
+        
+    go)
+        /usr/bin/kraken entropy go
+        ;;
+        
+    maven)
+        /usr/bin/kraken entropy apache-maven
+        ;;
+        
+    podman)
+        /usr/bin/kraken entropy podman-remote
+        ;;
+        
+    kubectl)
+        /usr/bin/kraken entropy kubectl
+        ;;
+        
+    terraform)
+        /usr/bin/kraken entropy terraform
+        ;;
+        
+    ansible)
+        /usr/bin/kraken download ansible
+        /usr/bin/kraken prepare ansible
+        /usr/bin/kraken build ansible
+        /usr/bin/kraken fakeinstall ansible
+        /usr/bin/kraken install ansible
+        /usr/bin/kraken postinstall ansible
+        ;;
+        
+    awscli)
+        /usr/bin/kraken entropy awscli
+        ;;
+        
+    kotlin)
+        /usr/bin/kraken entropy kotlin
+        ;;
+        
+    *)
+        echo "Package not recognized: $pkg"
+        ;;
+esac
+
+                                   
+         
+        sleep 0.5
+    done
+fi
+
+
+
+
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 sleep 3
@@ -519,6 +674,164 @@ userdel -r nacef
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
+
+
+
+
+    echo "PROGRESS:30:Selected packages"
+echo -e "\nSelected Packages:"
+if [ -n "$packages" ]; then
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+        echo " - $pkg"
+    done
+else
+    echo "No packages selected"
+fi  
+
+
+echo "PROGRESS:50:Packages installed"
+if [ -n "$packages" ]; then
+
+    declare -A base_packages=(
+        [gcc]=1 [clang]=1 [rustc]=1 [llvm]=1 [gc]=1 
+        [vim]=1 [cmake]=1 [ninja]=1 [meson]=1 [git]=1 
+        [gdb]=1 [strace]=1 [python3]=1 [npm]=1 [pip]=1 
+        [cargo]=1 [sqlite3]=1 [curl]=1 [wget]=1
+    )
+
+    declare -A non_ready_packages=(
+   
+    [composer]=1 [gin]=1  [restapi]=1  [jest]=1 
+    [cypress]=1  [mariadb]=1 [docker]=1 [azurcli]=1  [googlecloudsdk]=1 
+    [grafana]=1  [nagios]=1 [prometheus]=1 
+    [react-nativeb]=1 [wireshark]=1
+    [nmap]=1  [openvpn]=1 [netcat]=1 
+    [wireguard]=1  [metasploit]=1 [burpsuite]=1 
+    [jhontheripper]=1 [aircrack]=1  [hashcat]=1  [scikitlearn]=1 
+    [tensorflow]=1 [pytorch]=1  [panda]=1  [numpy]=1 
+    [matplotlib]=1 [seaborn]=1  [plotly]=1  [spark]=1 
+    [hadoop]=1 [rstudio]=1  [caret]=1  [root-framework]=1 
+    [geant4]=1 [openfoam]=1  [lammps]=1  [quanrumespresso]=1 
+    [gromacs]=1 [paraview]=1  [blender]=1  [simulation]=1 
+    [stellarium]=1 [astropy]=1  [saoimageds9]=1  [celestia]=1 
+    [sagemath]=1 [maxima]=1  [sympy]=1  [octave]=1 
+    [R]=1 [jupyter-notebook]=1  [pspp]=1  [gretl]=1 
+    [gnuplot]=1 [texmaker]=1  [lyx]=1  [texstudio]=1 
+    [zotero]=1 
+
+
+    )
+
+    echo "Processing packages:"
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+
+       if [[ -n "${base_packages[$pkg]}" ]]; then
+            echo " - $pkg: installed in base system"
+            sleep 1
+        elif [[ -n "${non_ready_packages[$pkg]}" ]]; then
+            echo " - $pkg: available in next release"
+            sleep 0.2
+
+        else 
+
+        case "$pkg" in
+    vscode | emacs)
+        /usr/bin/kraken entropy emacs
+        ;;
+        
+    ideaic)
+        /usr/bin/kraken entropy ideaic
+        ;;
+        
+    cli)
+        /usr/bin/kraken entropy cli
+        ;;
+        
+    gitlabcli)
+        /usr/bin/kraken entropy gitlabcli
+        ;;
+        
+    valgrind)
+        /usr/bin/kraken entropy valgrind
+        ;;
+        
+    java)
+        /usr/bin/kraken entropy java
+        /usr/bin/kraken entropy giflib
+        /usr/bin/kraken entropy libXt
+        /usr/bin/kraken download jdk
+        /usr/bin/kraken prepare jdk
+        /usr/bin/kraken build jdk
+        /usr/bin/kraken fakeinstall jdk
+        /usr/bin/kraken install jdk
+        /usr/bin/kraken postinstall jdk
+        ;;
+        
+    php)
+        /usr/bin/kraken entropy apache
+        /usr/bin/kraken entropy libxml2
+        /usr/bin/kraken download php
+        /usr/bin/kraken prepare php
+        /usr/bin/kraken build php
+        /usr/bin/kraken fakeinstall php
+        /usr/bin/kraken install php
+        /usr/bin/kraken postinstall php
+        ;;
+        
+    go)
+        /usr/bin/kraken entropy go
+        ;;
+        
+    maven)
+        /usr/bin/kraken entropy apache-maven
+        ;;
+        
+    podman)
+        /usr/bin/kraken entropy podman-remote
+        ;;
+        
+    kubectl)
+        /usr/bin/kraken entropy kubectl
+        ;;
+        
+    terraform)
+        /usr/bin/kraken entropy terraform
+        ;;
+        
+    ansible)
+        /usr/bin/kraken download ansible
+        /usr/bin/kraken prepare ansible
+        /usr/bin/kraken build ansible
+        /usr/bin/kraken fakeinstall ansible
+        /usr/bin/kraken install ansible
+        /usr/bin/kraken postinstall ansible
+        ;;
+        
+    awscli)
+        /usr/bin/kraken entropy awscli
+        ;;
+        
+    kotlin)
+        /usr/bin/kraken entropy kotlin
+        ;;
+        
+    *)
+        echo "Package not recognized: $pkg"
+        ;;
+esac
+
+                                   
+         
+        sleep 0.5
+    done
+fi
+
+
+
+
+
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 sleep 3
@@ -758,6 +1071,162 @@ userdel -r nacef
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
+
+
+    echo "PROGRESS:30:Selected packages"
+echo -e "\nSelected Packages:"
+if [ -n "$packages" ]; then
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+        echo " - $pkg"
+    done
+else
+    echo "No packages selected"
+fi  
+
+
+echo "PROGRESS:50:Packages installed"
+if [ -n "$packages" ]; then
+
+    declare -A base_packages=(
+        [gcc]=1 [clang]=1 [rustc]=1 [llvm]=1 [gc]=1 
+        [vim]=1 [cmake]=1 [ninja]=1 [meson]=1 [git]=1 
+        [gdb]=1 [strace]=1 [python3]=1 [npm]=1 [pip]=1 
+        [cargo]=1 [sqlite3]=1 [curl]=1 [wget]=1
+    )
+
+    declare -A non_ready_packages=(
+   
+    [composer]=1 [gin]=1  [restapi]=1  [jest]=1 
+    [cypress]=1  [mariadb]=1 [docker]=1 [azurcli]=1  [googlecloudsdk]=1 
+    [grafana]=1  [nagios]=1 [prometheus]=1 
+    [react-nativeb]=1 [wireshark]=1
+    [nmap]=1  [openvpn]=1 [netcat]=1 
+    [wireguard]=1  [metasploit]=1 [burpsuite]=1 
+    [jhontheripper]=1 [aircrack]=1  [hashcat]=1  [scikitlearn]=1 
+    [tensorflow]=1 [pytorch]=1  [panda]=1  [numpy]=1 
+    [matplotlib]=1 [seaborn]=1  [plotly]=1  [spark]=1 
+    [hadoop]=1 [rstudio]=1  [caret]=1  [root-framework]=1 
+    [geant4]=1 [openfoam]=1  [lammps]=1  [quanrumespresso]=1 
+    [gromacs]=1 [paraview]=1  [blender]=1  [simulation]=1 
+    [stellarium]=1 [astropy]=1  [saoimageds9]=1  [celestia]=1 
+    [sagemath]=1 [maxima]=1  [sympy]=1  [octave]=1 
+    [R]=1 [jupyter-notebook]=1  [pspp]=1  [gretl]=1 
+    [gnuplot]=1 [texmaker]=1  [lyx]=1  [texstudio]=1 
+    [zotero]=1 
+
+
+    )
+
+    echo "Processing packages:"
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+
+       if [[ -n "${base_packages[$pkg]}" ]]; then
+            echo " - $pkg: installed in base system"
+            sleep 1
+        elif [[ -n "${non_ready_packages[$pkg]}" ]]; then
+            echo " - $pkg: available in next release"
+            sleep 0.2
+
+        else 
+
+        case "$pkg" in
+    vscode | emacs)
+        /usr/bin/kraken entropy emacs
+        ;;
+        
+    ideaic)
+        /usr/bin/kraken entropy ideaic
+        ;;
+        
+    cli)
+        /usr/bin/kraken entropy cli
+        ;;
+        
+    gitlabcli)
+        /usr/bin/kraken entropy gitlabcli
+        ;;
+        
+    valgrind)
+        /usr/bin/kraken entropy valgrind
+        ;;
+        
+    java)
+        /usr/bin/kraken entropy java
+        /usr/bin/kraken entropy giflib
+        /usr/bin/kraken entropy libXt
+        /usr/bin/kraken download jdk
+        /usr/bin/kraken prepare jdk
+        /usr/bin/kraken build jdk
+        /usr/bin/kraken fakeinstall jdk
+        /usr/bin/kraken install jdk
+        /usr/bin/kraken postinstall jdk
+        ;;
+        
+    php)
+        /usr/bin/kraken entropy apache
+        /usr/bin/kraken entropy libxml2
+        /usr/bin/kraken download php
+        /usr/bin/kraken prepare php
+        /usr/bin/kraken build php
+        /usr/bin/kraken fakeinstall php
+        /usr/bin/kraken install php
+        /usr/bin/kraken postinstall php
+        ;;
+        
+    go)
+        /usr/bin/kraken entropy go
+        ;;
+        
+    maven)
+        /usr/bin/kraken entropy apache-maven
+        ;;
+        
+    podman)
+        /usr/bin/kraken entropy podman-remote
+        ;;
+        
+    kubectl)
+        /usr/bin/kraken entropy kubectl
+        ;;
+        
+    terraform)
+        /usr/bin/kraken entropy terraform
+        ;;
+        
+    ansible)
+        /usr/bin/kraken download ansible
+        /usr/bin/kraken prepare ansible
+        /usr/bin/kraken build ansible
+        /usr/bin/kraken fakeinstall ansible
+        /usr/bin/kraken install ansible
+        /usr/bin/kraken postinstall ansible
+        ;;
+        
+    awscli)
+        /usr/bin/kraken entropy awscli
+        ;;
+        
+    kotlin)
+        /usr/bin/kraken entropy kotlin
+        ;;
+        
+    *)
+        echo "Package not recognized: $pkg"
+        ;;
+esac
+
+                                   
+         
+        sleep 0.5
+    done
+fi
+
+
+
+
+
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 sleep 3
@@ -986,6 +1455,169 @@ userdel -r nacef
 echo "enable sddm services ..."
 sed -i 's/^#exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/exec \${DISPLAY_MANAGER} \${DM_OPTIONS}/' /etc/rc.d/init.d/xdm
 rm -Rf /etc/rc.d/init.d/startkde
+
+
+
+
+    echo "PROGRESS:30:Selected packages"
+echo -e "\nSelected Packages:"
+if [ -n "$packages" ]; then
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+        echo " - $pkg"
+    done
+else
+    echo "No packages selected"
+fi  
+
+
+echo "PROGRESS:50:Packages installed"
+if [ -n "$packages" ]; then
+
+    declare -A base_packages=(
+        [gcc]=1 [clang]=1 [rustc]=1 [llvm]=1 [gc]=1 
+        [vim]=1 [cmake]=1 [ninja]=1 [meson]=1 [git]=1 
+        [gdb]=1 [strace]=1 [python3]=1 [npm]=1 [pip]=1 
+        [cargo]=1 [sqlite3]=1 [curl]=1 [wget]=1
+    )
+
+    declare -A non_ready_packages=(
+   
+    [composer]=1 [gin]=1  [restapi]=1  [jest]=1 
+    [cypress]=1  [mariadb]=1 [docker]=1 [azurcli]=1  [googlecloudsdk]=1 
+    [grafana]=1  [nagios]=1 [prometheus]=1 
+    [react-nativeb]=1 [wireshark]=1
+    [nmap]=1  [openvpn]=1 [netcat]=1 
+    [wireguard]=1  [metasploit]=1 [burpsuite]=1 
+    [jhontheripper]=1 [aircrack]=1  [hashcat]=1  [scikitlearn]=1 
+    [tensorflow]=1 [pytorch]=1  [panda]=1  [numpy]=1 
+    [matplotlib]=1 [seaborn]=1  [plotly]=1  [spark]=1 
+    [hadoop]=1 [rstudio]=1  [caret]=1  [root-framework]=1 
+    [geant4]=1 [openfoam]=1  [lammps]=1  [quanrumespresso]=1 
+    [gromacs]=1 [paraview]=1  [blender]=1  [simulation]=1 
+    [stellarium]=1 [astropy]=1  [saoimageds9]=1  [celestia]=1 
+    [sagemath]=1 [maxima]=1  [sympy]=1  [octave]=1 
+    [R]=1 [jupyter-notebook]=1  [pspp]=1  [gretl]=1 
+    [gnuplot]=1 [texmaker]=1  [lyx]=1  [texstudio]=1 
+    [zotero]=1 
+
+
+    )
+
+    echo "Processing packages:"
+    IFS=',' read -ra PKG_ARRAY <<< "$packages"
+    for pkg in "${PKG_ARRAY[@]}"; do
+
+       if [[ -n "${base_packages[$pkg]}" ]]; then
+            echo " - $pkg: installed in base system"
+            sleep 1
+        elif [[ -n "${non_ready_packages[$pkg]}" ]]; then
+            echo " - $pkg: available in next release"
+            sleep 0.2
+
+        else 
+
+        case "$pkg" in
+    vscode | emacs)
+        /usr/bin/kraken entropy emacs
+        ;;
+        
+    ideaic)
+        /usr/bin/kraken entropy ideaic
+        ;;
+        
+    cli)
+        /usr/bin/kraken entropy cli
+        ;;
+        
+    gitlabcli)
+        /usr/bin/kraken entropy gitlabcli
+        ;;
+        
+    valgrind)
+        /usr/bin/kraken entropy valgrind
+        ;;
+        
+    java)
+        /usr/bin/kraken entropy java
+        /usr/bin/kraken entropy giflib
+        /usr/bin/kraken entropy libXt
+        /usr/bin/kraken download jdk
+        /usr/bin/kraken prepare jdk
+        /usr/bin/kraken build jdk
+        /usr/bin/kraken fakeinstall jdk
+        /usr/bin/kraken install jdk
+        /usr/bin/kraken postinstall jdk
+        ;;
+        
+    php)
+        /usr/bin/kraken entropy apache
+        /usr/bin/kraken entropy libxml2
+        /usr/bin/kraken download php
+        /usr/bin/kraken prepare php
+        /usr/bin/kraken build php
+        /usr/bin/kraken fakeinstall php
+        /usr/bin/kraken install php
+        /usr/bin/kraken postinstall php
+        ;;
+        
+    go)
+        /usr/bin/kraken entropy go
+        ;;
+        
+    maven)
+        /usr/bin/kraken entropy apache-maven
+        ;;
+        
+    podman)
+        /usr/bin/kraken entropy podman-remote
+        ;;
+        
+    kubectl)
+        /usr/bin/kraken entropy kubectl
+        ;;
+        
+    terraform)
+        /usr/bin/kraken entropy terraform
+        ;;
+        
+    ansible)
+        /usr/bin/kraken download ansible
+        /usr/bin/kraken prepare ansible
+        /usr/bin/kraken build ansible
+        /usr/bin/kraken fakeinstall ansible
+        /usr/bin/kraken install ansible
+        /usr/bin/kraken postinstall ansible
+        ;;
+        
+    awscli)
+        /usr/bin/kraken entropy awscli
+        ;;
+        
+    kotlin)
+        /usr/bin/kraken entropy kotlin
+        ;;
+        
+    *)
+        echo "Package not recognized: $pkg"
+        ;;
+esac
+
+                                   
+         
+        sleep 0.5
+    done
+fi
+
+
+
+
+
+
+
+
+
+
 CHROOT_EOF
 echo "PROGRESS:100:Installation complete"
 sleep 3
