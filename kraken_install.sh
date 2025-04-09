@@ -70,7 +70,7 @@ if [ "$swap_on" == "yes" ] && [ "$home_on" == "yes" ]; then
     echo "Creating partitions with both swap and home..."
     echo "label: gpt
 size=500M, type=21686148-6449-6E6F-744E-656564454649, name=bios_boot
-size=25G, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root
+size=35G, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=root
 size=2G, type=0657FD6D-A4AB-43C4-84E5-0933C84B4F4F, name=swap
 size=-, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name=home" | sfdisk "$DISK"
     
@@ -348,88 +348,115 @@ if [ -n "$packages" ]; then
 
         case "$pkg" in
     vscode)
-        chroot /home/kraken /bin/bash -c "kraken download vscode && kraken prepare vscode "
+        #chroot /home/kraken /bin/bash -c "kraken download vscode && kraken prepare vscode "
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#vscode"
         ;;
         
     ideaic)
          
-        chroot /home/kraken /bin/bash -c "kraken download ideaic && kraken prepare ideaic "
+       # chroot /home/kraken /bin/bash -c "kraken download ideaic && kraken prepare ideaic "
+
+       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#jetbrains.idea-community"
+
         ;;
         
     cli)
-     chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
-     sleep 1
-         chroot /home/kraken /bin/bash -c "kraken download cli && kraken prepare cli && kraken build cli  && kraken install cli " 
+     #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
+     #sleep 1
+         #chroot /home/kraken /bin/bash -c "kraken download cli && kraken prepare cli && kraken build cli  && kraken install cli " 
+       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#gh"
+       
         ;;
         
     gitlabcli)
 
-    chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
-    sleep 1 
-        chroot /home/kraken /bin/bash -c "kraken download gitlabcli && kraken prepare gitlabcli && kraken build gitlabcli && kraken install gitlabcli  && kraken postinstall gitlabcli " 
+    #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
+    #sleep 1 
+       # chroot /home/kraken /bin/bash -c "kraken download gitlabcli && kraken prepare gitlabcli && kraken build gitlabcli && kraken install gitlabcli  && kraken postinstall gitlabcli " 
+       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#glab"
         ;;
         
     valgrind)
-        chroot /home/kraken /bin/bash -c "kraken download valgrind && kraken prepare valgrind &&  kraken build valgrind && kraken install valgrind " 
+        #chroot /home/kraken /bin/bash -c "kraken download valgrind && kraken prepare valgrind &&  kraken build valgrind && kraken install valgrind " 
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#valgrind"
         ;;
         
     java)
-        chroot /home/kraken /bin/bash -c "kraken download java && kraken prepare java &&  kraken install java && kraken postinstall java " 
-        
+        #chroot /home/kraken /bin/bash -c "kraken download java && kraken prepare java &&  kraken install java && kraken postinstall java " 
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#jdk"
         ;;
         
     php)
-        chroot /home/kraken /bin/bash -c "kraken download apr  && kraken prepare apr && kraken build apr  &&  kraken install apr  "
-         sleep 1
-        chroot /home/kraken /bin/bash -c "kraken download apr-util && kraken prepare apr-util && kraken build apr-util &&  kraken install apr-util  "
-        sleep 1 
+        #chroot /home/kraken /bin/bash -c "kraken download apr  && kraken prepare apr && kraken build apr  &&  kraken install apr  "
+        # sleep 1
+        #chroot /home/kraken /bin/bash -c "kraken download apr-util && kraken prepare apr-util && kraken build apr-util &&  kraken install apr-util  "
+        #sleep 1 
 
-        chroot /home/kraken /bin/bash -c "kraken download pcre2  && kraken prepare pcre2 && kraken build pcre2  &&  kraken install pcre2  "
-      sleep 1 
+        #chroot /home/kraken /bin/bash -c "kraken download pcre2  && kraken prepare pcre2 && kraken build pcre2  &&  kraken install pcre2  "
+      #sleep 1 
 
-        chroot /home/kraken /bin/bash -c "kraken download apache  && kraken prepare apache && kraken build apache  &&  kraken install apache  "
-      sleep 1 
+       # chroot /home/kraken /bin/bash -c "kraken download apache  && kraken prepare apache && kraken build apache  &&  kraken install apache  "
+      #sleep 1 
 
-      chroot /home/kraken /bin/bash -c "kraken download icu  && kraken prepare icu && kraken build icu  &&  kraken install icu  "
-      sleep 1 
+      #chroot /home/kraken /bin/bash -c "kraken download icu  && kraken prepare icu && kraken build icu  &&  kraken install icu  "
+      #sleep 1 
 
-      chroot /home/kraken /bin/bash -c "kraken download libxml2  && kraken prepare libxml2 && kraken build libxml2  &&  kraken install libxml2 && kraken postinstall libxml2  "
-         sleep 1 
+      #chroot /home/kraken /bin/bash -c "kraken download libxml2  && kraken prepare libxml2 && kraken build libxml2  &&  kraken install libxml2 && kraken postinstall libxml2  "
+       #  sleep 1 
 
 
-         chroot /home/kraken /bin/bash -c "kraken download php  && kraken prepare php && kraken build php &&  kraken install php && kraken postinstall php "
+        # chroot /home/kraken /bin/bash -c "kraken download php  && kraken prepare php && kraken build php &&  kraken install php && kraken postinstall php "
+        
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#php"
         ;;
         
     go)
-        chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go "
+        #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go "
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#go"
         ;;
         
     maven)
-        chroot /home/kraken /bin/bash -c "kraken download apache-maven && kraken prepare apache-maven && kraken build apache-maven &&  kraken install apache-maven "
+        
+    
+    #chroot /home/kraken /bin/bash -c "kraken download apache-maven && kraken prepare apache-maven && kraken build apache-maven &&  kraken install apache-maven "
+       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#maven"
         ;;
         
     podman)
-         chroot /home/kraken /bin/bash -c "kraken download podman-remote && kraken prepare podman-remote"
+         #chroot /home/kraken /bin/bash -c "kraken download podman-remote && kraken prepare podman-remote"
+       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#podman"
         ;;
         
     kubectl)
-        chroot /home/kraken /bin/bash -c "kraken download kubectl && kraken prepare kubectl"
+        #chroot /home/kraken /bin/bash -c "kraken download kubectl && kraken prepare kubectl"
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#kubectl"
         ;;
         
     terraform)
-        chroot /home/kraken /bin/bash -c "kraken download terraform && kraken prepare terraform "
+       
+       
+             #chroot /home/kraken /bin/bash -c "kraken download terraform && kraken prepare terraform "
+            chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#terraform"
         ;;
         
     ansible)
-        chroot /home/kraken /bin/bash -c "kraken download ansible  && kraken prepare ansible &&  kraken install ansible  "
+       # chroot /home/kraken /bin/bash -c "kraken download ansible  && kraken prepare ansible &&  kraken install ansible  "
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#ansible"
+       
         ;;
         
     awscli)
-        chroot /home/kraken /bin/bash -c "kraken download awscli && kraken prepare awscli "
+        #chroot /home/kraken /bin/bash -c "kraken download awscli && kraken prepare awscli "
+         chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#awscli2"
+        
         ;;
         
     kotlin)
-        chroot /home/kraken /bin/bash -c "kraken download kotlin && kraken prepare kotlin "
+        
+        
+        #chroot /home/kraken /bin/bash -c "kraken download kotlin && kraken prepare kotlin "
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#kotlin"
+        
         ;;
         
     *)
