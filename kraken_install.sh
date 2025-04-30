@@ -356,7 +356,8 @@ if [ -n "$packages" ]; then
             sleep 0.2
 
         else 
-
+          chroot /home/kraken /bin/bash -c "kraken download cli"
+          sleep 3 
         case "$pkg" in
     vscode)
         #chroot /home/kraken /bin/bash -c "kraken download vscode && kraken prepare vscode "
