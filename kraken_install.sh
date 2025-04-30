@@ -291,8 +291,14 @@ chroot /home/kraken /bin/bash -c "alacritty migrate "
 
 
 
-echo "PROGRESS:72:This will take some time based on your selected packages.\nNote that we build packages from source.\nThis might take years... as  he takes my entire life! :')"
-echo "PROGRESS:75:Selected packages"
+echo "PROGRESS:72:This will take some time based on your selected packages."
+sleep 6
+
+echo "PROGRESS:75:Note that we build packages from source..."
+sleep 6
+echo "PROGRESS:78:So This might take years... as he takes my entire life! :)"
+sleep 8
+echo "PROGRESS:79:Selected packages"
 echo -e "\nSelected Packages:"
 if [ -n "$packages" ]; then
     IFS=',' read -ra PKG_ARRAY <<< "$packages"
@@ -303,6 +309,7 @@ else
     echo "No packages selected"
 fi  
 
+sleep 8
 
 echo "PROGRESS:80:Installing Packages ..."
 if [ -n "$packages" ]; then
@@ -353,14 +360,17 @@ if [ -n "$packages" ]; then
         case "$pkg" in
     vscode)
         #chroot /home/kraken /bin/bash -c "kraken download vscode && kraken prepare vscode "
-        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#vscode"
+       
+        
+         #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#vscode"
+	       chroot /home/kraken /bin/bash -c "kraken entropy vscode"
         ;;
         
     ideaic)
          
        # chroot /home/kraken /bin/bash -c "kraken download ideaic && kraken prepare ideaic "
 
-       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#jetbrains.idea-community"
+        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#jetbrains.idea-community"
 
         ;;
         
@@ -368,8 +378,8 @@ if [ -n "$packages" ]; then
      #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
      #sleep 1
          #chroot /home/kraken /bin/bash -c "kraken download cli && kraken prepare cli && kraken build cli  && kraken install cli " 
-       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#gh"
-       
+       #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#gh"
+        chroot /home/kraken /bin/bash -c "kraken entropy cli"
         ;;
         
     gitlabcli)
@@ -377,12 +387,14 @@ if [ -n "$packages" ]; then
     #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go " 
     #sleep 1 
        # chroot /home/kraken /bin/bash -c "kraken download gitlabcli && kraken prepare gitlabcli && kraken build gitlabcli && kraken install gitlabcli  && kraken postinstall gitlabcli " 
-       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#glab"
+       #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#glab"
+       chroot /home/kraken /bin/bash -c "kraken entropy gitlabcli"
         ;;
         
     valgrind)
         #chroot /home/kraken /bin/bash -c "kraken download valgrind && kraken prepare valgrind &&  kraken build valgrind && kraken install valgrind " 
-        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#valgrind"
+        # chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#valgrind"
+        chroot /home/kraken /bin/bash -c "kraken entropy valgrind"
         ;;
         
     java)
@@ -416,19 +428,22 @@ if [ -n "$packages" ]; then
         
     go)
         #chroot /home/kraken /bin/bash -c "kraken download go && kraken prepare go && kraken install go "
-        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#go"
+        #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#go"
+        chroot /home/kraken /bin/bash -c "kraken entropy go"
         ;;
         
     maven)
         
     
     #chroot /home/kraken /bin/bash -c "kraken download apache-maven && kraken prepare apache-maven && kraken build apache-maven &&  kraken install apache-maven "
-       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#maven"
+       #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#maven"
+       chroot /home/kraken /bin/bash -c "kraken entropy apache-maven"
         ;;
         
     podman)
          #chroot /home/kraken /bin/bash -c "kraken download podman-remote && kraken prepare podman-remote"
-       chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#podman"
+       #chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#podman"
+       chroot /home/kraken /bin/bash -c "kraken entropy podman-remote"
         ;;
         
     kubectl)
@@ -445,7 +460,8 @@ if [ -n "$packages" ]; then
         
     ansible)
        # chroot /home/kraken /bin/bash -c "kraken download ansible  && kraken prepare ansible &&  kraken install ansible  "
-        chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#ansible"
+       # chroot /home/kraken /bin/bash -c "nix profile install nixpkgs#ansible"
+       chroot /home/kraken /bin/bash -c "kraken entropy ansible"
        
         ;;
         
@@ -642,6 +658,8 @@ cat > "/home/$username/.config/alacritty/alacritty.toml" << 'EOF'
 [shell]
 program = "bash"
 args = ["-c", "fastfetch; exec bash"]
+[window]
+opacity=.9
 EOF
 
 /usr/bin/alacritty migrate
