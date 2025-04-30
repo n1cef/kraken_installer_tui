@@ -16,18 +16,18 @@ usage() {
 
 
 validate_parameters() {
-    # Check for help request
+    
     if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         usage
     fi
 
-    # Check number of parameters
+    
     if [ $# -ne 10 ]; then
         echo -e "${RED}Error: Missing parameters${NC}"
         usage
     fi
 
-    # Check disk exists
+    
     if [ ! -b "$1" ]; then
         echo -e "${RED}Error: Invalid disk device $1${NC}"
         usage
@@ -107,6 +107,10 @@ echo "mounting ..."
 mount --bind /dev /home/kraken/dev
 mount --bind /proc /home/kraken/proc
 mount --bind /sys /home/kraken/sys
+mount --bind /dev/pts /home/kraken/dev/pts
+mount --bind /dev/shm /home/kraken/dev/shm
+mount --bind /sys/fs/cgroup /home/kraken/sys/fs/cgroup
+mount -t tmpfs tmpfs /home/kraken/run
 echo "PROGRESS:50:Packages installed"
 echo "chroot to the new system "
 chroot /home/kraken /bin/bash << CHROOT_EOF
