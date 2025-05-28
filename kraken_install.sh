@@ -100,7 +100,7 @@ rm -Rf /home/kraken/boot/*
 cp /boot/System.map-6.10.5  /home/kraken/boot/
 cp /boot/config-6.10.5  /home/kraken/boot/
 cp /boot/vmlinuz-kraken-4.0.0 /home/kraken/boot/
-cp /boot/ /home/kraken/boot/
+cp -r /boot/ /home/kraken/boot/
 
 
 
