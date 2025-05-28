@@ -99,7 +99,7 @@ echo "copy kernel image .."
 rm -Rf /home/kraken/boot/*
 cp /boot/System.map-6.10.5  /home/kraken/boot/
 cp /boot/config-6.10.5  /home/kraken/boot/
-cp /boot/vmlinuz-6.10.5-lfs-12.2 /home/kraken/boot/
+cp /boot/ /home/kraken/boot/
 mv /home/kraken/boot/vmlinuz-6.10.5-lfs-12.2 /home/kraken/boot/vmlinuz-6.10.5-kraken-1.0
 
 
@@ -547,8 +547,8 @@ echo "copy kernla image .."
 rm -Rf /home/kraken/boot/* 
 cp /boot/System.map-6.10.5  /home/kraken/boot/
 cp /boot/config-6.10.5  /home/kraken/boot/
-cp /boot/vmlinuz-6.10.5-lfs-12.2 /home/kraken/boot/
-mv /home/kraken/boot/vmlinuz-6.10.5-lfs-12.2 /home/kraken/boot/vmlinuz-6.10.5-kraken-1.0
+cp /boot/ /home/kraken/boot/
+mv /home/kraken/boot/vmlinuz-kraken-3.10 /home/kraken/boot/vmlinuz-6.10.5-kraken-1.0
 
 
 echo "mounting ..."
