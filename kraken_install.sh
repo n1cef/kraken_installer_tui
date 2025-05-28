@@ -256,6 +256,14 @@ umount -R "${DISK}4"
 
 
 
+cp  -r  /root/.config/cairo-dock/ /home/"$username"/.config
+
+chown "$username":"$username" /home/"$username"/.config/cairo-dock/
+
+mkdir -pv /home/"$username"/.icons
+chown "$username":"$username" /home/"$username"/.icons
+cp -r /root/.icons/*   /home/"$username"/.icons/    
+
 
 echo "Configure Hostname"
 echo "$hostname" > /etc/hostname
