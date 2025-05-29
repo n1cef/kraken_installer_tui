@@ -99,8 +99,8 @@ echo "copy kernel image .."
 rm -Rf /home/kraken/boot/*
 cp /boot/System.map-6.10.5  /home/kraken/boot/
 cp /boot/config-6.10.5  /home/kraken/boot/
-cp /boot/vmlinuz-kraken-4.0.0 /home/kraken/boot/
-cp -r /boot/ /home/kraken/boot/
+cp /boot/vmlinuz_kraken /home/kraken/boot/
+cp -r /boot/* /home/kraken/boot/
 
 
 
@@ -162,14 +162,14 @@ if loadfont /boot/grub/fonts/unicode.pf2; then
 fi
 
 menuentry "GNU/Linux, kraken os " {
-  linux  /boot/vmlinuz-kraken-4.0.0 root=${DISK}2 ro
+  linux  /boot/vmlinuz_kraken root=${DISK}2 ro
 }
 menuentry "kraken os (Debug) " {
-  linux  /boot/vmlinuz-kraken-4.0.0 root=${DISK}2 ro
+  linux  /boot/vmlinuz_kraken root=${DISK}2 ro
 }
 
 menuentry "kraken os (Ram)" {
-  linux  /boot/vmlinuz-kraken-4.0.0 root=${DISK}2 ro
+  linux  /boot/vmlinuz_kraken root=${DISK}2 ro
 }
 
 menuentry "Firmware Setup" {
